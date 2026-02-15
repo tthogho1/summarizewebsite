@@ -1,21 +1,13 @@
-"""Entry point: starts FastAPI and Gradio servers on a single port."""
+"""Gradio web UI for Wikipedia summarization."""
 
-import logging
 import gradio as gr
-import uvicorn
-from config import API_PORT, MODEL_NAME, DEFAULT_TARGET_TOKENS, MIN_TARGET_TOKENS, MAX_TARGET_TOKENS
+from config import DEFAULT_TARGET_TOKENS, MODEL_NAME, MIN_TARGET_TOKENS, MAX_TARGET_TOKENS, GRADIO_PORT
+from summarizer import summarize_wiki
+from model_loader import count_tokens
 
-logger = logging.getLogger(__name__)
 
-
-def main():
-    from api import app
-    from summarizer import summarize_wiki
-    from model_loader import count_tokens
-
-    print(f"Starting Wikipedia Summarizer with model: {MODEL_NAME}")
-
-    # Build Gradio interface
+def launch_gradio():
+    """Launch Gradio web interface (blocking)."""
     def gradio_wrapper(url: str, target_tokens: float) -> str:
         summary = summarize_wiki(url, int(target_tokens))
         tokens = count_tokens(summary)
@@ -34,13 +26,4 @@ def main():
         title="Wikipedia Summarizer",
         description=f"Summarize Wikipedia articles using {MODEL_NAME}",
     )
-
-    # Mount Gradio into FastAPI on the same port
-    app = gr.mount_gradio_app(app, demo, path="/")
-
-    uvicorn.run(app, host="0.0.0.0", port=API_PORT)
-
-
-if __name__ == "__main__":
-    main()
-
+    demo.launch(server_name="0.0.0.0", server_port=GRADIO_PORT, share=False)
