@@ -1,0 +1,8 @@
+requests
+beautifulsoup4
+gradio
+transformers
+torch
+fastapi
+uvicorn
+python-dotenv
